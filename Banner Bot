@@ -1,0 +1,162 @@
+npx create-next-app@latest my-nextjs-project --typescript
+cd my-nextjs-project
+npm install @mui/material @emotion/react @emotion/styled
+[
+    {
+      "id": "1",
+      "title": "Summer Sale",
+      "description": "Huge discounts on summer collection!",
+      "cta": "Shop Now",
+      "image": "/images/summer-sale.jpg",
+      "background": "#ffeb3b"
+    },
+    {
+      "id": "2",
+      "title": "Winter Sale",
+      "description": "Warm up with winter sale!",
+      "cta": "Explore Now",
+      "image": "/images/winter-sale.jpg",
+      "background": "#90caf9"
+    }
+  ]
+  // components/BannerImageComp.tsx
+import React from 'react';
+import { Card, CardContent, Typography, Button } from '@mui/material';
+
+interface AdBannerProps {
+  title: string;
+  description: string;
+  cta: string;
+  image: string;
+  background: string;
+  onEdit: () => void;
+}
+
+const BannerImageComp: React.FC<AdBannerProps> = ({ title, description, cta, image, background, onEdit }) => {
+  return (
+    <Card style={{ backgroundColor: background, maxWidth: 345, margin: '10px' }}>
+      <img src={image} alt={title} style={{ width: '100%' }} />
+      <CardContent>
+        <Typography variant="h5">{title}</Typography>
+        <Typography variant="body2">{description}</Typography>
+        <Button onClick={onEdit}>{cta}</Button>                                              
+      </CardContent>
+    </Card>
+  );
+};
+
+export default BannerImageComp;
+// pages/index.tsx
+import { useState } from 'react';
+import BannerImageComp from '../components/BannerImageComp';
+import EditBannerTemplateBs from '../components/EditBannerTemplateBs';
+import adsData from '../data/ads.json';
+
+const Home = () => {
+  const [ads, setAds] = useState(adsData);
+  const [editAd, setEditAd] = useState<any>(null);
+
+  const handleEdit = (ad: any) => {
+    setEditAd(ad);
+  };
+
+  const handleSave = (updatedAd: any) => {
+    setAds(ads.map(ad => (ad.id === updatedAd.id ? updatedAd : ad)));
+    setEditAd(null);
+  };
+
+  return (
+    <div>
+      <h1>Ad Banners</h1>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {ads.map(ad => (
+          <BannerImageComp
+            key={ad.id}
+            title={ad.title}
+            description={ad.description}
+            cta={ad.cta}
+            image={ad.image}
+            background={ad.background}
+            onEdit={() => handleEdit(ad)}
+          />
+        ))}
+      </div>
+      {editAd && <EditBannerTemplateBs ad={editAd} onSave={handleSave} onClose={() => setEditAd(null)} />}
+    </div>
+  );
+};
+
+export default Home;
+// components/EditBannerTemplateBs.tsx
+import React, { useState } from 'react';
+import { Drawer, TextField, Button, Box } from '@mui/material';
+
+interface EditBannerTemplateBsProps {
+  ad: any;
+  onSave: (updatedAd: any) => void;
+  onClose: () => void;
+}
+
+const EditBannerTemplateBs: React.FC<EditBannerTemplateBsProps> = ({ ad, onSave, onClose }) => {
+  const [formData, setFormData] = useState(ad);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <Drawer anchor="bottom" open={true} onClose={onClose}>
+      <Box p={2} width="100%" maxWidth={500}>
+        <h2>Edit Ad Banner</h2>
+        <TextField
+          label="Title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="CTA"
+          name="cta"
+          value={formData.cta}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Image URL"
+          name="image"
+          value={formData.image}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Background Color"
+          name="background"
+          value={formData.background}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <Button variant="contained" color="primary" onClick={() => onSave(formData)}>
+          Save
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={onClose}>
+          Cancel
+        </Button>
+      </Box>
+    </Drawer>
+  );
+};
+
+export default EditBannerTemplateBs;
